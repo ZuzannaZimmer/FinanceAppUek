@@ -11,7 +11,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 
-function ExpenseList() {
+function ExpenseList({ refreshFlag, onChange  }) {
   const [expenses, setExpenses] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -42,7 +42,7 @@ function ExpenseList() {
 
   useEffect(() => {
     fetchExpenses();
-  }, [startDate, endDate]);
+  }, [refreshFlag, startDate, endDate]);
 
   return (
     <div>
@@ -68,13 +68,15 @@ function ExpenseList() {
       </div>
 
       {expenses.map((item) => (
-        <ExpenseItem key={item.id} item={item} refresh={fetchExpenses} />
+        <ExpenseItem key={item.id} item={item} refresh={fetchExpenses} onChange={onChange} />
+        
       ))}
+      
     </div>
   );
 }
 
-function ExpenseItem({ item, refresh }) {
+function ExpenseItem({ item, refresh, onChange  }) {
   const [isEditing, setIsEditing] = useState(false);
   const [newDesc, setNewDesc] = useState(item.description);
   const [newAmount, setNewAmount] = useState(item.amount);
@@ -101,6 +103,7 @@ function ExpenseItem({ item, refresh }) {
       const ref = doc(db, "expenses", item.id);
       await deleteDoc(ref);
       refresh();
+      if (onChange) onChange();
     } catch (error) {
       console.error("Błąd przy usuwaniu:", error);
     }
@@ -133,6 +136,19 @@ function ExpenseItem({ item, refresh }) {
               <img src={item.receiptUrl} alt="Paragon" width="200" />
             </div>
           )}
+          {item.location && (
+            <p>
+              🌍{" "}
+              <a
+                href={`https://www.google.com/maps?q=${item.location.lat},${item.location.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Zobacz na mapie
+              </a>
+            </p>
+          )}
+
           <button onClick={() => setIsEditing(true)}>Edytuj</button>
           <button onClick={handleDelete} style={{ marginLeft: "10px", color: "red" }}>
             Usuń

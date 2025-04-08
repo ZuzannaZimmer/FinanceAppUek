@@ -3,11 +3,11 @@ import { db, storage } from "../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-function AddExpense() {
+function AddExpense({onAdd}) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
-
+  const [location, setLocation] = useState(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -37,8 +37,10 @@ function AddExpense() {
         description,
         receiptUrl: imageUrl,
         createdAt: Timestamp.now(),
+        location
       });
 
+      if (onAdd) onAdd();
       // Wyczyść formularz
       setAmount("");
       setDescription("");
@@ -50,6 +52,26 @@ function AddExpense() {
       alert("Wystąpił błąd przy zapisie");
     }
   };
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Twoja przeglądarka nie obsługuje geolokalizacji");
+      return;
+    }
+  
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.error("Błąd geolokalizacji:", error);
+        alert("Nie udało się pobrać lokalizacji");
+      }
+    );
+  };
+  
 
   return (
     <form onSubmit={handleSubmit}>
@@ -77,6 +99,11 @@ function AddExpense() {
       />
       <br />
       <button type="submit">Dodaj</button>
+      <button type="button" onClick={handleGetLocation}>
+        Dodaj lokalizację
+      </button>
+      {location && <p>Lokalizacja dodana ✅</p>}
+
     </form>
   );
 }

@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 
-function BudgetSummary({ limit = 500 }) {
+function BudgetSummary({ refreshFlag }) {
+  const [limit, setLimit] = useState(() => {
+    // pobierz z localStorage przy starcie
+    const saved = localStorage.getItem("budgetLimit");
+    return saved ? parseFloat(saved) : 500;
+  });
+
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -16,19 +22,40 @@ function BudgetSummary({ limit = 500 }) {
       );
 
       const snapshot = await getDocs(q);
-      const sum = snapshot.docs.reduce((acc, doc) => acc + (doc.data().amount || 0), 0);
+      const sum = snapshot.docs.reduce(
+        (acc, doc) => acc + (doc.data().amount || 0),
+        0
+      );
       setTotal(sum);
     };
 
     fetchThisMonthExpenses();
-  }, []);
+  }, [refreshFlag]);
 
   const remaining = limit - total;
+
+  const handleLimitChange = (e) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+      setLimit(value);
+      localStorage.setItem("budgetLimit", value);
+    }
+  };
 
   return (
     <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc" }}>
       <h2>Podsumowanie budżetu</h2>
-      <p><strong>Limit miesięczny:</strong> {limit} zł</p>
+      
+      <label>
+        <strong>Limit miesięczny:</strong>{" "}
+        <input
+          type="number"
+          value={limit}
+          onChange={handleLimitChange}
+          style={{ width: "80px" }}
+        /> zł
+      </label>
+
       <p><strong>Wydano:</strong> {total.toFixed(2)} zł</p>
       <p style={{ color: remaining >= 0 ? "green" : "red" }}>
         <strong>Pozostało:</strong> {remaining.toFixed(2)} zł
