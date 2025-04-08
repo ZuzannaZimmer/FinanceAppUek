@@ -39,6 +39,10 @@ function AddExpense({onAdd}) {
         createdAt: Timestamp.now(),
         location
       });
+      if ("vibrate" in navigator) {
+        navigator.vibrate(200); // wibracja przez 200ms
+      }
+      
 
       if (onAdd) onAdd();
       // Wyczyść formularz
