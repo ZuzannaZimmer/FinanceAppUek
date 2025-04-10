@@ -2,19 +2,19 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
-
-
-
+import Login from "./components/Login";
+import Register from "./components/Register";
 import AddExpense from "./components/AddExpense";
 import ExpenseList from "./components/ExpenseList";
 import BudgetSummary from "./components/BudgetSummary";
-import Login from "./components/Login";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   const [view, setView] = useState("add");
   const [refreshFlag, setRefreshFlag] = useState(false);
   const [user, setUser] = useState(null);
+  const [authView, setAuthView] = useState("login");
+
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -28,10 +28,21 @@ function App() {
   if (!user) {
     return (
       <div className="container py-5">
-        <Login onLogin={() => setUser(auth.currentUser)} />
+        {authView === "login" ? (
+          <Login
+            onLogin={() => setUser(auth.currentUser)}
+            goToRegister={() => setAuthView("register")}
+          />
+        ) : (
+          <Register
+            onRegister={() => setUser(auth.currentUser)}
+            goToLogin={() => setAuthView("login")}
+          />
+        )}
       </div>
     );
   }
+  
 
   return (
     <div className="container py-4">
