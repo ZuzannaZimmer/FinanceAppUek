@@ -1,0 +1,61 @@
+.expense-card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .expense-card img {
+    margin-top: 10px;
+    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .expense-card button {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 8px;
+    margin-top: 10px;
+    color: white;
+  }
+  
+  .expense-card button.edit {
+    background-color: #007bff;
+  }
+  
+  .expense-card button.edit:hover {
+    background-color: #0056b3;
+  }
+  
+  .expense-card button.delete {
+    background-color: #dc3545;
+  }
+  
+  .expense-card button.delete:hover {
+    background-color: #c82333;
+  }
+  .fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .fullscreen-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }

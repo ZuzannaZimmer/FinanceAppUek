@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import '../style/BudgetSummary.css';
+
 
 function BudgetSummary({ refreshFlag }) {
   const [limit, setLimit] = useState(() => {
@@ -43,7 +45,8 @@ function BudgetSummary({ refreshFlag }) {
   };
 
   return (
-    <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc" }}>
+     <div className="budget-summary">
+    
       <h2>Podsumowanie budżetu</h2>
       
       <label>

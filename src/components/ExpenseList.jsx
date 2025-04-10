@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
+import '../style/ExpenseList.css';
+
 import {
   collection,
   getDocs,
@@ -15,6 +17,7 @@ function ExpenseList({ refreshFlag, onChange  }) {
   const [expenses, setExpenses] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  
 
   const fetchExpenses = async () => {
     try {
@@ -80,6 +83,7 @@ function ExpenseItem({ item, refresh, onChange  }) {
   const [isEditing, setIsEditing] = useState(false);
   const [newDesc, setNewDesc] = useState(item.description);
   const [newAmount, setNewAmount] = useState(item.amount);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
 
   const handleSave = async () => {
     try {
@@ -110,7 +114,7 @@ function ExpenseItem({ item, refresh, onChange  }) {
   };
 
   return (
-    <div style={{ border: "1px solid #ccc", margin: "10px", padding: "10px" }}>
+    <div key={item.id} className="expense-card">
       {isEditing ? (
         <>
           <input
@@ -132,9 +136,15 @@ function ExpenseItem({ item, refresh, onChange  }) {
           <p><strong>Data:</strong> {item.createdAt?.toDate().toLocaleString()}</p>
           {item.receiptUrl && (
             <div>
-              <strong>Paragon:</strong><br />
-              <img src={item.receiptUrl} alt="Paragon" width="200" />
-            </div>
+            <strong>Paragon:</strong><br />
+            <img
+              src={item.receiptUrl}
+              alt="Paragon"
+              width="200"
+              onClick={() => setFullscreenImage(item.receiptUrl)}
+              style={{ cursor: 'pointer' }}
+            />
+          </div>
           )}
           {item.location && (
             <p>
@@ -149,13 +159,19 @@ function ExpenseItem({ item, refresh, onChange  }) {
             </p>
           )}
 
-          <button onClick={() => setIsEditing(true)}>Edytuj</button>
-          <button onClick={handleDelete} style={{ marginLeft: "10px", color: "red" }}>
+          <button className="edit" onClick={() => setIsEditing(true)}>Edytuj</button>
+          <button className="delete" onClick={handleDelete} style={{ marginLeft: "10px", color: "white" }}>
             Usuń
           </button>
         </>
       )}
+      {fullscreenImage && (
+        <div className="fullscreen-overlay" onClick={() => setFullscreenImage(null)}>
+          <img src={fullscreenImage} alt="Powiększony paragon" />
+        </div>
+      )}
     </div>
+    
   );
 }
 

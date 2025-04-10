@@ -1,20 +1,46 @@
-// Nowa wersja aplikacji z Bootstrapem i pełną funkcjonalnością
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { signOut } from "firebase/auth";
 
-import { useState } from "react";
+
+
 import AddExpense from "./components/AddExpense";
 import ExpenseList from "./components/ExpenseList";
 import BudgetSummary from "./components/BudgetSummary";
+import Login from "./components/Login";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   const [view, setView] = useState("add");
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+    return () => unsub();
+  }, []);
 
   const triggerRefresh = () => setRefreshFlag((prev) => !prev);
+
+  if (!user) {
+    return (
+      <div className="container py-5">
+        <Login onLogin={() => setUser(auth.currentUser)} />
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4">
       <h1 className="text-center mb-4">BudżetApp</h1>
+      <div className="text-end mb-3">
+        <button className="btn btn-outline-danger" onClick={() => signOut(auth)}>
+          Wyloguj się
+        </button>
+      </div>
 
       {/* Zakładki */}
       <div className="d-flex justify-content-center mb-4 gap-2">
