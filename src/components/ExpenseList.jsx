@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
+import { auth } from "../firebase";
 import '../style/ExpenseList.css';
 
 import {
@@ -21,8 +22,15 @@ function ExpenseList({ refreshFlag, onChange  }) {
 
   const fetchExpenses = async () => {
     try {
-      let q = query(collection(db, "expenses"), orderBy("createdAt", "desc"));
-
+      const user = auth.currentUser;
+      if (!user) return;
+  
+      let q = query(
+        collection(db, "expenses"),
+        where("uid", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+  
       if (startDate) {
         q = query(q, where("createdAt", ">=", new Date(startDate)));
       }
@@ -31,7 +39,7 @@ function ExpenseList({ refreshFlag, onChange  }) {
         nextDay.setDate(nextDay.getDate() + 1);
         q = query(q, where("createdAt", "<", nextDay));
       }
-
+  
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -42,6 +50,7 @@ function ExpenseList({ refreshFlag, onChange  }) {
       console.error("Błąd przy pobieraniu danych:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchExpenses();
@@ -133,6 +142,7 @@ function ExpenseItem({ item, refresh, onChange  }) {
         <>
           <p><strong>Kwota:</strong> {item.amount} zł</p>
           <p><strong>Opis:</strong> {item.description}</p>
+          <p><strong>Kategoria:</strong> {item.category}</p>
           <p><strong>Data:</strong> {item.createdAt?.toDate().toLocaleString()}</p>
           {item.receiptUrl && (
             <div>

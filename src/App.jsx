@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
+import { createUserDoc } from "./utils/firebaseUtils";
 import { auth } from "./firebase";
 import { signOut } from "firebase/auth";
 import Login from "./components/Login";
@@ -17,10 +18,23 @@ function App() {
 
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          console.log("Użytkownik zalogowany:", user);
+          await createUserDoc(user); // <---- Zapis do kolekcji "users"
+          setUser(user);
+        } catch (error) {
+          console.error("Błąd przy zapisie użytkownika:", error);
+        }
+      } else {
+        console.log("Użytkownik wylogowany");
+        setUser(null);
+      }
     });
+  
     return () => unsub();
+  
   }, []);
 
   const triggerRefresh = () => setRefreshFlag((prev) => !prev);

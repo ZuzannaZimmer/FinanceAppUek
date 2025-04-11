@@ -2,17 +2,32 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import '../style/BudgetSummary.css';
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth } from "../firebase"; 
+
 
 
 function BudgetSummary({ refreshFlag }) {
-  const [limit, setLimit] = useState(() => {
-    // pobierz z localStorage przy starcie
-    const saved = localStorage.getItem("budgetLimit");
-    return saved ? parseFloat(saved) : 500;
-  });
+  const [limit, setLimit] = useState(500); // domyślnie 500, potem pobierz z Firestore
+
 
   const [total, setTotal] = useState(0);
-
+  const saveBudgetLimit = async (newLimit) => {
+    const user = auth.currentUser;
+    if (!user) return;
+  
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  
+    await setDoc(doc(db, "budgetLimits", `${user.uid}_${month}`), {
+      uid: user.uid,
+      month,
+      limit: newLimit,
+      updatedAt: new Date()
+    });
+  };
+  
+  
   useEffect(() => {
     const fetchThisMonthExpenses = async () => {
       const now = new Date();
@@ -33,16 +48,39 @@ function BudgetSummary({ refreshFlag }) {
 
     fetchThisMonthExpenses();
   }, [refreshFlag]);
+  useEffect(() => {
+    const fetchBudgetLimit = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+  
+      const now = new Date();
+      const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  
+      const docRef = doc(db, "budgetLimits", `${user.uid}_${month}`);
+      const snapshot = await getDoc(docRef);
+  
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setLimit(data.limit || 500);
+      }
+    };
+  
+    fetchBudgetLimit();
+  }, []);
+  
 
   const remaining = limit - total;
 
-  const handleLimitChange = (e) => {
+  const handleLimitChange = async (e) => {
     const value = parseFloat(e.target.value);
     if (!isNaN(value)) {
       setLimit(value);
       localStorage.setItem("budgetLimit", value);
+      await saveBudgetLimit(value); // <--- zapis do Firestore
     }
   };
+  
+  
 
   return (
      <div className="budget-summary">

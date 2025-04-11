@@ -2,6 +2,7 @@ import { useState } from "react";
 import { db, storage } from "../firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { auth } from "../firebase";
 import '../style/AddExpense.css'
 
 function AddExpense({onAdd}) {
@@ -9,8 +10,15 @@ function AddExpense({onAdd}) {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [location, setLocation] = useState(null);
+  const [category, setCategory] = useState("");
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if ("vibrate" in navigator) {
+      navigator.vibrate([100, 50, 100]);
+    }
 
     if (!amount || !description) {
       alert("Uzupełnij wszystkie pola!");
@@ -36,9 +44,11 @@ function AddExpense({onAdd}) {
       await addDoc(collection(db, "expenses"), {
         amount: parseFloat(amount),
         description,
+        category,
         receiptUrl: imageUrl,
         createdAt: Timestamp.now(),
-        location
+        location,
+        uid: auth.currentUser.uid,
       });
       if ("vibrate" in navigator) {
         navigator.vibrate(200); // wibracja przez 200ms
@@ -75,6 +85,8 @@ function AddExpense({onAdd}) {
         alert("Nie udało się pobrać lokalizacji");
       }
     );
+    
+    
   };
   
 
@@ -96,12 +108,41 @@ function AddExpense({onAdd}) {
         onChange={(e) => setDescription(e.target.value)}
         required
       />
-      <br />
+      <select
+        className="form-control mb-3"
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        required
+      >
+        <option value="">Wybierz kategorię</option>
+        <option value="jedzenie">Jedzenie</option>
+        <option value="transport">Transport</option>
+        <option value="rozrywka">Rozrywka</option>
+        <option value="inne">Inne</option>
+      </select>
+
+      <div className="mb-3">
+      <label className="form-label">Wybierz zdjęcie z galerii:</label>
       <input
         type="file"
         accept="image/*"
-        onChange={(e) => setFile(e.target.files[0])}
+        className="form-control mb-3"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
       />
+
+      <label className="form-label">Zrób zdjęcie aparatem:</label>
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="form-control"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
+      />
+      </div>
+
+
+
+
       <br />
       <button type="submit">Dodaj</button>
       <button type="button" onClick={handleGetLocation}>
